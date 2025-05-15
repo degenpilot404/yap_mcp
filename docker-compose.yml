@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  yap-mcp:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - YAPS_API_ENDPOINT=${YAPS_API_ENDPOINT:-https://api.kaito.ai/api/v1/yaps}
+      - PORT=3000
+      - REDIS_URI=redis://redis:6379
+      - YAPS_CACHE_TTL=600
+      - LEADERBOARD_CACHE_TTL=86400
+    depends_on:
+      - redis
+    restart: unless-stopped
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+
+volumes:
+  redis-data: 

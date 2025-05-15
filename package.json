@@ -1,0 +1,36 @@
+{
+  "name": "yap-mcp",
+  "version": "1.0.0",
+  "description": "MCP server for Kaito's YAPS API providing tokenized attention scores for X/Twitter accounts",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx watch src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.3",
+    "@types/ioredis": "^4.28.10",
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "ioredis": "^5.3.2",
+    "node-cron": "^3.0.3",
+    "prom-client": "^15.0.0",
+    "zod": "^3.22.4"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.0",
+    "@types/node-cron": "^3.0.11",
+    "tsx": "^4.6.0",
+    "typescript": "^5.3.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
