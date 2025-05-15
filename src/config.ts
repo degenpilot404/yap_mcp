@@ -7,7 +7,6 @@ dotenv.config();
 // Define and validate environment variables schema
 const envSchema = z.object({
   YAPS_API_ENDPOINT: z.string().url().default('https://api.kaito.ai/api/v1/yaps'),
-  YAPS_API_KEY: z.string().optional(),
   REDIS_URI: z.string().url().optional().default('redis://localhost:6379'),
   PORT: z.string().regex(/^\d+$/).transform(Number).default('3000'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
@@ -18,7 +17,6 @@ const envSchema = z.object({
 // Validate and export environment variables
 export const config = envSchema.parse({
   YAPS_API_ENDPOINT: process.env.YAPS_API_ENDPOINT || 'https://api.kaito.ai/api/v1/yaps',
-  YAPS_API_KEY: process.env.YAPS_API_KEY,
   REDIS_URI: process.env.REDIS_URI || 'redis://localhost:6379',
   PORT: process.env.PORT,
   NODE_ENV: process.env.NODE_ENV,
