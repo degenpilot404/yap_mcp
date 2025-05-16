@@ -1,34 +1,33 @@
-import Redis from 'ioredis';
-import cron from 'node-cron';
-import { config, TRACKED_ACCOUNTS } from '../config.js';
+import { TRACKED_ACCOUNTS } from '../config.js';
 import { LeaderboardEntry, YAPSScore } from '../types.js';
 import { getYapsScore } from './yaps-api.js';
-import { RedisRateLimiter } from './rate-limiter.js';
+import { SimpleRateLimiter } from './rate-limiter.js';
 
-// Initialize Redis client
-const redis = new Redis.default(config.REDIS_URI);
-const rateLimiter = new RedisRateLimiter();
+// Initialize a simple rate limiter
+const rateLimiter = new SimpleRateLimiter();
 
-// Cache key for the leaderboard
-const LEADERBOARD_CACHE_KEY = 'yaps:leaderboard:daily';
+// Keep an in-memory cache for the current process only
+let leaderboardCache: LeaderboardEntry[] = [];
+let lastUpdateTime = 0;
+const CACHE_TTL = 3600 * 1000; // 1 hour in milliseconds
 
 // Function to update the leaderboard
-export const updateLeaderboard = async (): Promise<void> => {
-  console.log('Starting daily leaderboard update...');
+export const updateLeaderboard = async (): Promise<LeaderboardEntry[]> => {
+  console.log('Starting leaderboard update...');
   
   const scores: YAPSScore[] = [];
   
   // Fetch scores for all tracked accounts
   for (const username of TRACKED_ACCOUNTS) {
     try {
-      // Check rate limit before making the API call
+      // Always true with SimpleRateLimiter but we keep the API the same
       const underLimit = await rateLimiter.checkLimit();
       if (!underLimit) {
         console.warn('Rate limit reached during leaderboard update. Will continue in the next cycle.');
         break;
       }
       
-      // Increment counter and fetch score
+      // Increment counter (no-op in SimpleRateLimiter) and fetch score
       await rateLimiter.incrementCounter();
       const score = await getYapsScore(username);
       scores.push(score);
@@ -55,31 +54,23 @@ export const updateLeaderboard = async (): Promise<void> => {
     return entry;
   });
   
-  // Cache the leaderboard
-  await redis.set(
-    LEADERBOARD_CACHE_KEY,
-    JSON.stringify(top10),
-    'EX',
-    config.LEADERBOARD_CACHE_TTL
-  );
+  // Update in-memory cache
+  leaderboardCache = top10;
+  lastUpdateTime = Date.now();
   
   console.log(`Leaderboard updated with ${top10.length} entries`);
+  return top10;
 };
 
 // Get the current leaderboard
 export const getLeaderboard = async (): Promise<LeaderboardEntry[]> => {
-  const cachedLeaderboard = await redis.get(LEADERBOARD_CACHE_KEY);
-  
-  if (cachedLeaderboard) {
-    return JSON.parse(cachedLeaderboard) as LeaderboardEntry[];
+  // If cache exists and is fresh, return it
+  if (leaderboardCache.length > 0 && (Date.now() - lastUpdateTime) < CACHE_TTL) {
+    return leaderboardCache;
   }
   
-  // If no cached leaderboard, update it
-  await updateLeaderboard();
-  
-  // Get the newly cached leaderboard
-  const freshLeaderboard = await redis.get(LEADERBOARD_CACHE_KEY);
-  return freshLeaderboard ? JSON.parse(freshLeaderboard) as LeaderboardEntry[] : [];
+  // Otherwise, update the leaderboard
+  return updateLeaderboard();
 };
 
 // // Initialize the leaderboard scheduler

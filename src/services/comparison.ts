@@ -1,17 +1,5 @@
-import Redis from 'ioredis';
-import { config } from '../config.js';
 import { ScoreComparison, YAPSScore } from '../types.js';
 import { getYapsScore } from './yaps-api.js';
-
-// Initialize Redis client
-const redis = new Redis.default(config.REDIS_URI);
-
-// Cache key generator for YAPS comparisons
-const getComparisonCacheKey = (usernameA: string, usernameB: string): string => {
-  // Sort usernames to ensure consistent caching regardless of order
-  const sortedUsernames = [usernameA, usernameB].sort();
-  return `yaps:comparison:${sortedUsernames[0]}:${sortedUsernames[1]}`;
-};
 
 // Generate a natural language summary of the comparison
 const generateComparisonSummary = (
@@ -38,14 +26,6 @@ const generateComparisonSummary = (
 
 // Compare two users' YAPS scores
 export const compareYapsScores = async (usernameA: string, usernameB: string): Promise<ScoreComparison> => {
-  const cacheKey = getComparisonCacheKey(usernameA, usernameB);
-  
-  // Try to get from cache first
-  const cachedComparison = await redis.get(cacheKey);
-  if (cachedComparison) {
-    return JSON.parse(cachedComparison) as ScoreComparison;
-  }
-  
   // Fetch both scores in parallel
   const [scoreA, scoreB] = await Promise.all([
     getYapsScore(usernameA),
@@ -85,14 +65,6 @@ export const compareYapsScores = async (usernameA: string, usernameB: string): P
     deltas,
     summary
   };
-  
-  // Cache the comparison
-  await redis.set(
-    cacheKey,
-    JSON.stringify(comparison),
-    'EX',
-    config.YAPS_CACHE_TTL
-  );
   
   return comparison;
 }; 

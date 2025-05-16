@@ -3,7 +3,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import express from 'express';
 import { config } from './config.js';
 import { createMcpServer } from './mcp.js';
-import { RedisRateLimiter } from './services/rate-limiter.js';
+import { SimpleRateLimiter } from './services/rate-limiter.js';
 
 // Create the MCP server
 const server = createMcpServer();
@@ -27,8 +27,8 @@ async function startServer() {
       // Use HTTP transport for development and testing
       console.log(`Starting MCP server with HTTP transport on port ${config.PORT}`);
       
-      // Initialize rate limiter for tracking API usage
-      const rateLimiter = new RedisRateLimiter();
+      // Initialize rate limiter (pass-through implementation)
+      const rateLimiter = new SimpleRateLimiter();
       
       // Create an Express app
       const app = express();
@@ -62,7 +62,6 @@ async function startServer() {
         res.status(200).json({ 
           status: 'ok', 
           server: 'running',
-          redis: 'connected',
           config: {
             port: config.PORT,
             environment: config.NODE_ENV

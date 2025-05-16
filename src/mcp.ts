@@ -4,10 +4,10 @@ import { YAPSScore, ScoreComparison, LeaderboardEntry } from './types.js';
 import { getYapsScore } from './services/yaps-api.js';
 import { compareYapsScores } from './services/comparison.js';
 import { getLeaderboard } from './services/leaderboard.js';
-import { RedisRateLimiter } from './services/rate-limiter.js';
+import { SimpleRateLimiter } from './services/rate-limiter.js';
 
 // Initialize rate limiter
-const rateLimiter = new RedisRateLimiter();
+const rateLimiter = new SimpleRateLimiter();
 
 // Create the MCP server
 export const createMcpServer = () => {
