@@ -1,0 +1,63 @@
+# Smithery configuration file: https://smithery.ai/docs/build/project-config
+
+startCommand:
+  type: stdio
+  configSchema:
+    # JSON Schema defining the configuration options for the MCP.
+    type: object
+    required: []
+    properties:
+      yapsApiEndpoint:
+        type: string
+        default: https://api.kaito.ai/api/v1/yaps
+        description: Base URL for the YAPS API
+      redisUri:
+        type: string
+        default: redis://localhost:6379
+        description: Redis connection URI
+      port:
+        type: number
+        default: 3000
+        description: Port on which the server listens
+      nodeEnv:
+        type: string
+        default: development
+        description: Node environment
+      yapsCacheTtl:
+        type: number
+        default: 600
+        description: YAPS score cache TTL in seconds
+      leaderboardCacheTtl:
+        type: number
+        default: 86400
+        description: Leaderboard cache TTL in seconds
+      stdio:
+        type: boolean
+        default: false
+        description: Run the server over stdio transport
+  commandFunction:
+    # A JS function that produces the CLI command based on the given config to start the MCP on stdio.
+    |-
+    (config) => ({
+      command: 'node',
+      args: [
+        'dist/index.js',
+        ...(config.stdio ? ['--stdio'] : [])
+      ],
+      env: {
+        YAPS_API_ENDPOINT: config.yapsApiEndpoint,
+        REDIS_URI: config.redisUri,
+        PORT: String(config.port),
+        NODE_ENV: config.nodeEnv,
+        YAPS_CACHE_TTL: String(config.yapsCacheTtl),
+        LEADERBOARD_CACHE_TTL: String(config.leaderboardCacheTtl)
+      }
+    })
+  exampleConfig:
+    yapsApiEndpoint: https://api.kaito.ai/api/v1/yaps
+    redisUri: redis://localhost:6379
+    port: 3000
+    nodeEnv: development
+    yapsCacheTtl: 600
+    leaderboardCacheTtl: 86400
+    stdio: true

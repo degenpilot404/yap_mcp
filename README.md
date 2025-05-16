@@ -1,4 +1,5 @@
 # YAPS MCP Server
+[![smithery badge](https://smithery.ai/badge/@degenpilot404/yap_mcp)](https://smithery.ai/server/@degenpilot404/yap_mcp)
 
 An MCP (Model Context Protocol) server that wraps Kaito's YAPS API to provide tokenized attention scores for X/Twitter accounts. This server enables LLMs to query credibility and influence metrics for any X account, with built-in caching and rate limiting.
 
@@ -11,6 +12,14 @@ An MCP (Model Context Protocol) server that wraps Kaito's YAPS API to provide to
 - 💾 **Redis Caching**: 10-minute TTL for scores, 24-hour TTL for leaderboards
 
 ## Getting Started
+
+### Installing via Smithery
+
+To install yap_mcp for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@degenpilot404/yap_mcp):
+
+```bash
+npx -y @smithery/cli install @degenpilot404/yap_mcp --client claude
+```
 
 ### Prerequisites
 
